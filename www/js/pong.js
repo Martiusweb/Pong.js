@@ -10,6 +10,7 @@ var Pong, _config = {
   scene: {
     minWidth: 500,
     minHeight: 300,
+    margin: 10,
     separatorWidth: 2,
     separatorStyle: '#999',
     separatorDashLength: 12,
@@ -87,19 +88,25 @@ Pong = function (canvasElt) {
   this.wrapper.append(this.canvas);
 
   // Initialize 2 players \o/
-  this.players[0] = new Pong.Player(this.canvas, 0);
-  this.players[1] = new Pong.Player(this.canvas, 1);
+  this.players[0] = new Pong.Player(this, 0);
+  this.players[1] = new Pong.Player(this, 1);
 
   // cache horizontal middle of the scene position
   this.middleX = (this.canvas.width-_config.scene.separatorWidth)/2;
 
   // draw scene
   this.draw();
+
+  this.waitUser();
 };
 Pong._config = _config;
 
 Pong.prototype.draw = function() {
   var i;
+
+  // Clear scene
+  this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
   // Draw players
   for(i = 0; i < this.players.length; ++i) {
     this.players[i].draw();
@@ -131,7 +138,51 @@ Pong.prototype.draw = function() {
   }
 };
 
+Pong.prototype.waitUser = function() {
+  var that = this;
+  this.wrapper.one('click', function(e) {
+    that.startGame();
+  });
+};
 
+/**
+ * Begin the game
+ */
+Pong.prototype.startGame = function() {
+  this.wrapper.css('cursor', 'none');
+
+  // Move handle with cursor
+  var that = this;
+  this.wrapper.mousemove(function(e) {
+    var wrapperOffset = that.wrapper.offset();
+    that.players[0].moveTo(e.pageY - wrapperOffset.top);
+  });
+
+  // Listen to pause events
+  this.wrapper.one('click', function() {
+    that.stopGame();
+  });
+
+  $(document).keypress(function(e) {
+    if(e.which == 32) { // Space bar
+      that.stopGame();
+    }
+  });
+};
+
+/**
+ * Stop pauses the game action, it's not the end of the game.
+ */
+Pong.prototype.stopGame = function() {
+  this.wrapper.css('cursor', 'auto');
+
+  // Stop trying to move handle, wait for pause
+  this.wrapper.unbind('mousemove');
+  this.wrapper.unbind('keypress');
+
+  // Wait for the user to start the game
+  this.waitUser();
+};
 
 var _bootstrap = function() {
   var pongInstance = new Pong($('#ponginstance'));

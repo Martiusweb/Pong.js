@@ -8,12 +8,8 @@
 /**
  * A player (current user or opponent).
  */
-Pong.Player = function(canvas, player) {
-  this.canvas = canvas;
-  /**
-   * Canvas context
-   */
-  this.canvasCtx = this.canvas.getContext('2d');
+Pong.Player = function(pong, player) {
+  this.pong = pong;
   /**
    * Style
    */
@@ -25,12 +21,12 @@ Pong.Player = function(canvas, player) {
   /**
    * Position (on the axis where the handle moves)
    */
-  this.position = 10;
+  this.position = Pong._config.scene.margin;
 
   // Compute the right fixedPosition value (negative value means from the
   // opposite side)
   if(this.fixedPosition < 0) {
-    this.fixedPosition += canvas.width - Pong._config.handle.minWidth;
+    this.fixedPosition += this.pong.canvas.width - Pong._config.handle.minWidth;
   }
 };
 
@@ -38,8 +34,8 @@ Pong.Player = function(canvas, player) {
  * Draws player handle
  */
 Pong.Player.prototype.draw = function() {
-  this.canvasCtx.fillStyle = this.style;
-  this.canvasCtx.fillRect(
+  this.pong.canvasCtx.fillStyle = this.style;
+  this.pong.canvasCtx.fillRect(
     this.fixedPosition,
     this.position,
     Pong._config.handle.minWidth,
@@ -47,9 +43,22 @@ Pong.Player.prototype.draw = function() {
   );
 };
 
+Pong.Player.prototype.moveTo = function(position) {
+  position = Math.max(position, Pong._config.scene.margin);
+  var handleBottomPos = position + Pong._config.handle.minHeight;
+  var sceneBottom = this.pong.canvas.height - Pong._config.scene.margin;
+
+  if(handleBottomPos > sceneBottom)
+    position = sceneBottom - Pong._config.handle.minHeight;
+
+  this.position = position;
+
+  this.pong.draw();
+};
+
 /**
  * Moves the handle of $movement$ pixels
  */
 Pong.Player.prototype.moveOf = function(movement) {
-  this.position += movement;
+  this.moveTo(this.position + movement);
 };
