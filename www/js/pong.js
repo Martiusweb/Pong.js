@@ -10,15 +10,19 @@ var Pong, _config = {
   scene: {
     minWidth: 500,
     minHeight: 300,
+    separatorWidth: 2,
+    separatorStyle: '#999',
+    separatorDashLength: 12,
+    separatorGapLength: 6,
   },
   handle: {
     minWidth: 12,
-    minHeight: 60,
+    minHeight: 30,
     // Position of the player handle, indexed by player
     // If the value is negative, the position is computed according to the
     // opposite side of the canvas.
     playerPosition: [20, -20],
-    playerStyle: ['#336699', '#FF9900'],
+    playerStyle: ['white', 'white'],
   }
 };
 
@@ -28,6 +32,11 @@ var Pong, _config = {
  *  - does not handle loading errors
  */
 var _require = function(libraries, callback) {
+  if(!libraries || libraries.length == 0) {
+    callback();
+    return;
+  }
+
   if(typeof(libraries) == 'string')
     libraries = [libraries];
 
@@ -58,11 +67,11 @@ Pong = function (canvasElt) {
   /**
    * Canvas element where we draw the scene
    */
-  this.canvas = document.createElement("canvas");
+  this.canvas = document.createElement('canvas');
   /**
    * Canvas context
    */
-  this.canvasCtx = this.canvas.getContext("2d");
+  this.canvasCtx = this.canvas.getContext('2d');
   /**
    * Players
    */
@@ -71,21 +80,64 @@ Pong = function (canvasElt) {
   // Scene size
   this.canvas.width = Math.max(_config.scene.minWidth, this.wrapper.width());
   this.canvas.height = Math.max(_config.scene.minHeight, this.wrapper.height());
+  // If the wrapper does not have a fixed height, a few remaining pixels may be visible
+  this.wrapper.height(this.canvas.height);
 
   // Prepare the game
   this.wrapper.append(this.canvas);
 
   // Initialize 2 players \o/
-  this.players[0] = new Pong.Player(this.canvasCtx, 0);
-//  this.players[1] = new Pong.Player(this.canvasCtx, 1);
+  this.players[0] = new Pong.Player(this.canvas, 0);
+  this.players[1] = new Pong.Player(this.canvas, 1);
+
+  // cache horizontal middle of the scene position
+  this.middleX = (this.canvas.width-_config.scene.separatorWidth)/2;
+
+  // draw scene
+  this.draw();
 };
 Pong._config = _config;
+
+Pong.prototype.draw = function() {
+  var i;
+  // Draw players
+  for(i = 0; i < this.players.length; ++i) {
+    this.players[i].draw();
+  }
+
+  // Draw ball
+
+  // Draw misc
+
+  // Draw middle line
+  this.canvasCtx.strokeStyle = _config.scene.separatorStyle;
+  this.canvasCtx.lineWidth = _config.scene.separatorWidth;
+  var draw = true, length = 0;
+
+  this.canvasCtx.beginPath();
+  this.canvasCtx.moveTo(this.middleX, 0);
+  while(length < this.canvas.height) {
+    if(draw) {
+      // Do not go too far !
+      length = Math.min(length+_config.scene.separatorDashLength, this.canvas.height);
+      this.canvasCtx.lineTo(this.middleX, length);
+      this.canvasCtx.stroke();
+    }
+    else {
+      length += _config.scene.separatorGapLength;
+      this.canvasCtx.moveTo(this.middleX, length);
+    }
+    draw = !draw;
+  }
+};
+
+
 
 var _bootstrap = function() {
   var pongInstance = new Pong($('#ponginstance'));
 };
 
-_require(['Player',],
+_require([/*'Player',*/],
   function() {
     $(document).ready(_bootstrap);
   }

@@ -8,11 +8,12 @@
 /**
  * A player (current user or opponent).
  */
-Pong.Player = function(canvasCtx, player) {
+Pong.Player = function(canvas, player) {
+  this.canvas = canvas;
   /**
    * Canvas context
    */
-  this.canvasCtx = canvasCtx;
+  this.canvasCtx = this.canvas.getContext('2d');
   /**
    * Style
    */
@@ -26,8 +27,11 @@ Pong.Player = function(canvasCtx, player) {
    */
   this.position = 10;
 
-  // Draw handle
-  this.draw();
+  // Compute the right fixedPosition value (negative value means from the
+  // opposite side)
+  if(this.fixedPosition < 0) {
+    this.fixedPosition += canvas.width - Pong._config.handle.minWidth;
+  }
 };
 
 /**
@@ -41,4 +45,11 @@ Pong.Player.prototype.draw = function() {
     Pong._config.handle.minWidth,
     Pong._config.handle.minHeight
   );
+};
+
+/**
+ * Moves the handle of $movement$ pixels
+ */
+Pong.Player.prototype.moveOf = function(movement) {
+  this.position += movement;
 };
