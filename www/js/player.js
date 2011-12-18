@@ -26,7 +26,7 @@ Pong.Player = function(pong, player) {
   // Compute the right fixedPosition value (negative value means from the
   // opposite side)
   if(this.fixedPosition < 0) {
-    this.fixedPosition += this.pong.canvas.width - Pong._config.handle.minWidth;
+    this.fixedPosition += this.pong.canvas.width - Pong._config.handle.width;
   }
 };
 
@@ -38,18 +38,18 @@ Pong.Player.prototype.draw = function() {
   this.pong.canvasCtx.fillRect(
     this.fixedPosition,
     this.position,
-    Pong._config.handle.minWidth,
-    Pong._config.handle.minHeight
+    Pong._config.handle.width,
+    Pong._config.handle.height
   );
 };
 
 Pong.Player.prototype.moveTo = function(position) {
   position = Math.max(position, Pong._config.scene.margin);
-  var handleBottomPos = position + Pong._config.handle.minHeight;
+  var handleBottomPos = position + Pong._config.handle.height;
   var sceneBottom = this.pong.canvas.height - Pong._config.scene.margin;
 
   if(handleBottomPos > sceneBottom)
-    position = sceneBottom - Pong._config.handle.minHeight;
+    position = sceneBottom - Pong._config.handle.height;
 
   this.position = position;
 

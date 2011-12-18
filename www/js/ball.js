@@ -102,7 +102,7 @@ Pong.Ball.prototype.move = function() {
   var player, handleBoundaryPos, inVerticalBoundaries;
   if(this.pong.player == 0 && this.x < this.pong.middleX) { // left side
     player = this.pong.players[0];
-    handleBoundaryPos = player.fixedPosition+Pong._config.handle.minWidth;
+    handleBoundaryPos = player.fixedPosition+Pong._config.handle.width;
 
     if((this.x-this.r) <= handleBoundaryPos) { // on the extreme left ?
       if(this.x <= Pong._config.scene.margin) { // out of scene
@@ -110,7 +110,7 @@ Pong.Ball.prototype.move = function() {
       }
       else {
         inVerticalBoundaries = (this.y >= player.position)
-          && (this.y <= (player.position+Pong._config.handle.minHeight));
+          && (this.y <= (player.position+Pong._config.handle.height));
 
         if(inVerticalBoundaries) {
           this.x = handleBoundaryPos+this.r;
@@ -128,7 +128,7 @@ Pong.Ball.prototype.move = function() {
       }
       else {
         inVerticalBoundaries = (this.y >= player.position)
-          && (this.y <= (player.position+Pong._config.handle.minHeight));
+          && (this.y <= (player.position+Pong._config.handle.height));
 
         if(inVerticalBoundaries) {
           this.x = handleBoundaryPos-this.r;

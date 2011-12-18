@@ -17,8 +17,8 @@ var Pong, _config = {
     separatorGapLength: 6,
   },
   handle: {
-    minWidth: 12,
-    minHeight: 30,
+    width: 12,
+    height: 30,
     // Position of the player handle, indexed by player
     // If the value is negative, the position is computed according to the
     // opposite side of the canvas.
