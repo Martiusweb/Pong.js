@@ -64,12 +64,28 @@ var _require = function(libraries, callback) {
 
 /**
  * Pong.js
+ *
+ * If the element has an ID, you can display fps by adding to the dom an element
+ * with the classes "fps"" and [element id], for instance, for the wrapper
+ * id="ponginstance", display fps in <span class="fps ponginstance"></span>
  */
 Pong = function (canvasElt) {
   /**
    * Dom element that wraps the game
    */
   this.wrapper = canvasElt;
+  /**
+   * Html element where to display FPS
+   */
+  this.fpsElt = null;
+  /**
+   * Last time a frame was drawn
+   */
+  this.lastFrameTimestamp = 0;
+  /**
+   * Computed FPS
+   */
+  this.fps = 0;
   /**
    * Canvas element where we draw the scene
    */
@@ -108,6 +124,11 @@ Pong = function (canvasElt) {
   // Prepare the game
   this.wrapper.append(this.canvas);
 
+  // Where to display debug stats
+  this.fpsElt = $('.fps.' + this.wrapper.attr('id'));
+  if(!this.fpsElt.length)
+    this.fpsElt == null;
+
   // Initialize 2 players \o/
   this.players[0] = new Pong.Player(this, 0);
   this.players[1] = new Pong.Player(this, 1);
@@ -126,11 +147,18 @@ Pong.requestAnimationFrame = window.requestAnimationFrame
 
 Pong.prototype.draw = function() {
   var that = this;
+  var drawFrameCallback = function(when) {
+    if(that.fpsElt) {
+      that.fps = 1/((when-that.lastFrameTimestamp)/1000);
+      that.lastFrameTimestamp = when;
+      that.fpsElt.text('about ' + Math.round(that.fps)+' fps');
+    }
+    that.draw.call(that);
+  };
+
   if(!this.invalidated) {
     if(this.isInMotion) {
-      Pong.requestAnimationFrame.call(window, function() {
-        that.draw.call(that);
-      });
+      Pong.requestAnimationFrame.call(window, drawFrameCallback);
     }
     return;
   }
@@ -176,9 +204,7 @@ Pong.prototype.draw = function() {
 
   // If in motion, we refresh at next frame
   if(this.isInMotion) {
-    Pong.requestAnimationFrame.call(window, function() {
-      that.draw.call(that);
-    });
+    Pong.requestAnimationFrame.call(window, drawFrameCallback);
   }
 };
 
