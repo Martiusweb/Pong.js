@@ -5,7 +5,6 @@
  * Serve static files of the game.
  */
 
-var http = require('http');
 var path = require('path');
 var fs = require('fs');
 
@@ -21,7 +20,7 @@ var _config = {
 };
 
 
-serveStatic = function(request, response) {
+exports.requestHandler = function(request, response) {
   // Prepare request URL
   var filePath = _config.root + request.url;
 
@@ -35,7 +34,7 @@ serveStatic = function(request, response) {
   if(request.url.slice(-1) == '/')
     filePath += 'index.html';
 
-  console.log("R: " + request.url + "\nR:\tserving " + filePath);
+  console.log("static: " + request.url + "\nR:\tserving " + filePath);
 
   var _readFile = function(error, content) {
     if(error) {
@@ -63,5 +62,3 @@ serveStatic = function(request, response) {
 
   path.exists(filePath, _statFile);
 };
-
-http.createServer(serveStatic).listen(8001);
