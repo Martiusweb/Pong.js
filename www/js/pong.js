@@ -28,6 +28,7 @@ var Pong, _config = {
   ball: {
     radius: 4,
     style: 'white',
+    refreshDelay: Math.round(1000/25), // in milliseconds
   },
 };
 
@@ -85,6 +86,10 @@ Pong = function (canvasElt) {
    * Ball
    */
   this.ball = null;
+  /**
+   * Playable player
+   */
+  this.player = 0;
 
   // Scene size
   this.canvas.width = Math.max(_config.scene.minWidth, this.wrapper.width());
@@ -179,12 +184,14 @@ Pong.prototype.startGame = function() {
   });
 
   this.ball = new Pong.Ball(this);
+  this.ball.animate();
 };
 
 /**
  * Stop pauses the game action, it's not the end of the game.
  */
 Pong.prototype.stopGame = function() {
+  this.ball.stop();
   this.ball = null;
 
   this.wrapper.css('cursor', 'auto');
@@ -192,9 +199,24 @@ Pong.prototype.stopGame = function() {
   // Stop trying to move handle, wait for pause
   this.wrapper.unbind('mousemove');
   this.wrapper.unbind('keypress');
+  this.wrapper.unbind('click');
 
   // Wait for the user to start the game
   this.waitUser();
+};
+
+/**
+ * Ball is out, player 0 lost the ball
+ */
+Pong.prototype.ballIsOutLeft = function() {
+  this.stopGame();
+};
+
+/**
+ * Ball is out, player 1 lost the ball
+ */
+Pong.prototype.ballIsOutLeft = function() {
+  this.stopGame();
 };
 
 var _bootstrap = function() {
