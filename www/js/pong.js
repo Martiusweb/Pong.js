@@ -113,7 +113,23 @@ Pong = function (canvasElt) {
   /**
    * Playable player
    */
-  this.player = 0;
+  this.player;
+  /**
+   * Playable player index in the players array
+   */
+  this.playerIdx;
+  /**
+   * Opponent
+   */
+  this.opponent;
+  /**
+   * Networking helper
+   */
+  this.network;
+  /**
+   * Networking state Element
+   */
+  this.networkElt = null;
 
   // Scene size
   this.canvas.width = Math.max(_config.scene.minWidth, this.wrapper.width());
@@ -125,16 +141,20 @@ Pong = function (canvasElt) {
   this.wrapper.append(this.canvas);
 
   // Where to display debug stats
-  this.fpsElt = $('.fps.' + this.wrapper.attr('id'));
-  if(!this.fpsElt.length)
-    this.fpsElt == null;
+  this.findStatsDOMElements();
 
   // Initialize 2 players \o/
   this.players[0] = new Pong.Player(this, 0);
   this.players[1] = new Pong.Player(this, 1);
+  this.player = this.players[0];
+  this.opponent = this.players[1];
+  this.playerIdx = 0;
 
   // cache horizontal middle of the scene position
   this.middleX = (this.canvas.width-_config.scene.separatorWidth)/2;
+
+  // Prepare connexion
+  this.network = new Pong.Network(this);
 
   this.waitUser();
 };
@@ -145,6 +165,9 @@ Pong.requestAnimationFrame = window.requestAnimationFrame
   || window.webkitRequestAnimationFrame
   || window.msRequestAnimationFrame;
 
+/**
+ * Draws the scene: handles, ball and separator.
+ */
 Pong.prototype.draw = function() {
   var that = this;
   var drawFrameCallback = function(when) {
@@ -208,6 +231,9 @@ Pong.prototype.draw = function() {
   }
 };
 
+/**
+ * The game is not in motion and we are waiting for a user to start the game.
+ */
 Pong.prototype.waitUser = function() {
   // Stop refresh
   this.isInMotion = false;
@@ -291,11 +317,23 @@ Pong.prototype.ballIsOut = function() {
   this.endGame();
 };
 
+/**
+ * Tries to find DOM Element in where we will display traces about Pong status.
+ */
+Pong.prototype.findStatsDOMElements = function() {
+  this.fpsElt = $('.fps.' + this.wrapper.attr('id'));
+  if(!this.fpsElt.length)
+    this.fpsElt == null;
+  this.networkElt = $('.network.' + this.wrapper.attr('id'));
+  if(!this.networkElt.length)
+    this.networkElt = null;
+};
+
 var _bootstrap = function() {
   var pongInstance = new Pong($('#ponginstance'));
 };
 
-_require([/*'Player', 'Ball',*/],
+_require([/*'Player', 'Ball', 'Network', */],
   function() {
     $(document).ready(_bootstrap);
   }

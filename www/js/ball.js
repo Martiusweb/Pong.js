@@ -100,7 +100,7 @@ Pong.Ball.prototype.move = function() {
   // Detection is made only on the side of the player, balls lost or bounced by
   // the opponent are aknowledged by the network
   var player, handleBoundaryPos, inVerticalBoundaries;
-  if(this.pong.player == 0 && this.x < this.pong.middleX) { // left side
+  if(this.pong.playerIdx === 0 && this.x < this.pong.middleX) { // left side
     player = this.pong.players[0];
     handleBoundaryPos = player.fixedPosition+Pong._config.handle.width;
 
@@ -119,7 +119,7 @@ Pong.Ball.prototype.move = function() {
       }
     }
   }
-  else if(this.pong.player == 1) { // right side
+  else if(this.pong.playerIdx === 1) { // right side
     player = this.pong.players[1];
     handleBoundaryPos = player.fixedPosition;
     if((this.x+this.r) >= handleBoundaryPos) {
