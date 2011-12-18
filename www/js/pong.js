@@ -258,17 +258,9 @@ Pong.prototype.endGame = function() {
 }
 
 /**
- * Ball is out, player 0 lost the ball
+ * Ball is out
  */
-Pong.prototype.ballIsOutLeft = function() {
-  this.stopGame();
-  this.endGame();
-};
-
-/**
- * Ball is out, player 1 lost the ball
- */
-Pong.prototype.ballIsOutRight = function() {
+Pong.prototype.ballIsOut = function() {
   this.stopGame();
   this.endGame();
 };

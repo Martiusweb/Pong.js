@@ -106,7 +106,7 @@ Pong.Ball.prototype.move = function() {
 
     if((this.x-this.r) <= handleBoundaryPos) { // on the extreme left ?
       if(this.x <= Pong._config.scene.margin) { // out of scene
-        this.pong.ballIsOutLeft();
+        this.pong.ballIsOut();
       }
       else {
         inVerticalBoundaries = (this.y >= player.position)
@@ -124,7 +124,7 @@ Pong.Ball.prototype.move = function() {
     handleBoundaryPos = player.fixedPosition;
     if((this.x+this.r) >= handleBoundaryPos) {
       if(this.x >= (this.pong.canvas.width + Pong._config.scene.margin)) {
-        this.pong.ballIsOutRight();
+        this.pong.ballIsOut();
       }
       else {
         inVerticalBoundaries = (this.y >= player.position)
