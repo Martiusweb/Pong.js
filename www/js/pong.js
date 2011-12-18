@@ -30,6 +30,9 @@ var Pong, _config = {
     style: 'white',
     refreshDelay: Math.round(1000/60), // in milliseconds
   },
+  network: {
+    refreshDelay: Math.round(1000/60), // in milliseconds
+  },
 };
 
 /**
