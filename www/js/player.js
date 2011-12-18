@@ -29,6 +29,8 @@ Pong.Player = function(pong, player) {
     this.fixedPosition += this.pong.canvas.width - Pong._config.handle.width;
   }
 };
+Pong.Player.LEFT = 0;
+Pong.Player.RIGHT = 1;
 
 /**
  * Draws player handle

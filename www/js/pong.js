@@ -147,11 +147,8 @@ Pong = function (canvasElt) {
   this.findStatsDOMElements();
 
   // Initialize 2 players \o/
-  this.players[0] = new Pong.Player(this, 0);
-  this.players[1] = new Pong.Player(this, 1);
-  this.player = this.players[0];
-  this.opponent = this.players[1];
-  this.playerIdx = 0;
+  this.players[Pong.Player.LEFT] = new Pong.Player(this, Pong.Player.LEFT);
+  this.players[Pong.Player.RIGHT] = new Pong.Player(this, Pong.Player.RIGHT);
 
   // cache horizontal middle of the scene position
   this.middleX = (this.canvas.width-_config.scene.separatorWidth)/2;
@@ -255,13 +252,19 @@ Pong.prototype.waitUser = function() {
  * Begin the game
  */
 Pong.prototype.startGame = function() {
+  // Can't start without an other player
+  if(!this.network.hasOpponent) {
+    this.waitUser();
+    return;
+  }
+
   this.wrapper.css('cursor', 'none');
 
   // Move handle with cursor
   var that = this;
   this.wrapper.mousemove(function(e) {
     var wrapperOffset = that.wrapper.offset();
-    that.players[0].moveTo(e.pageY - wrapperOffset.top);
+    that.player.moveTo(e.pageY - wrapperOffset.top);
   });
 
   // Listen to pause events
@@ -279,6 +282,8 @@ Pong.prototype.startGame = function() {
   if(this.ball == null)
     this.ball = new Pong.Ball(this);
 
+  this.network.activateUpdates();
+
   // Ready to update
   this.isInMotion = true;
   this.draw();
@@ -291,6 +296,11 @@ Pong.prototype.startGame = function() {
  * Stop pauses the game action, it's not the end of the game.
  */
 Pong.prototype.stopGame = function() {
+  if(!this.ball) // game isn't started
+    return;
+
+  this.network.deactivateUpdates();
+
   this.ball.stop();
 
   this.wrapper.css('cursor', 'auto');
@@ -318,6 +328,24 @@ Pong.prototype.endGame = function() {
 Pong.prototype.ballIsOut = function() {
   this.stopGame();
   this.endGame();
+};
+
+/**
+ * Control player on the left.
+ */
+Pong.prototype.beLeftPlayer = function() {
+  this.playerIdx = 0;
+  this.player = this.players[0];
+  this.opponent = this.players[1];
+};
+
+/**
+ * Control player on the right.
+ */
+Pong.prototype.beRightPlayer = function() {
+  this.playerIdx = 1;
+  this.player = this.players[1];
+  this.opponent = this.players[0];
 };
 
 /**

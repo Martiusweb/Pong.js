@@ -15,6 +15,10 @@ Pong.Network = function(pong) {
    * Refresh timer
    */
   this.timer = null;
+  /**
+   * True if the player has an opponent online
+   */
+  this.hasOpponent = false;
 
   this.connect();
 };
@@ -28,13 +32,24 @@ Pong.Network.prototype.connect = function() {
     if(that.pong.networkElt)
       that.pong.networkElt.text('Connected !');
     that.initNetworkHandlers();
-
-/*
-    this.timer = window.setInterval(function() {
-      that.sendUpdate.call(that);
-    }, Pong._config.network.refreshDelay);
-//*/
   });
+};
+
+/**
+ * Activates the timer with trigger the sendUpdates operation
+ */
+Pong.Network.prototype.activateUpdates = function() {
+  var that = this;
+  this.timer = window.setInterval(function() {
+    that.sendUpdate.call(that);
+  }, Pong._config.network.refreshDelay);
+};
+
+/**
+ * Deactivates updates
+ */
+Pong.Network.prototype.deactivateUpdates = function() {
+  clearInterval(this.timer);
 };
 
 Pong.Network.prototype.initNetworkHandlers = function() {
@@ -46,6 +61,30 @@ Pong.Network.prototype.initNetworkHandlers = function() {
   this.socket.on('player.wait', function() {
     if(that.pong.networkElt)
       that.pong.networkElt.text('Waiting for an other player...');
+  });
+
+  /**
+   * Other player found
+   */
+  this.socket.on('player.hasOpponent', function(data) {
+    that.hasOpponent = true;
+    if(that.pong.networkElt)
+      that.pong.networkElt.text('Other player found, you play on the '+
+        (data.side === Pong.Player.LEFT ? 'left' : 'right') +'!');
+
+    if(data.side === Pong.Player.LEFT)
+      that.pong.beLeftPlayer();
+    else
+      that.pong.beRightPlayer();
+  });
+
+  /**
+   * Other player left the game
+   */
+  this.socket.on('player.opponnentLeft', function(data) {
+    that.hasOpponent = false;
+    that.pong.stopGame();
+    that.pong.endGame();
   });
 
   /**
