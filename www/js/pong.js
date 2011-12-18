@@ -28,7 +28,7 @@ var Pong, _config = {
   ball: {
     radius: 4,
     style: 'white',
-    refreshDelay: Math.round(1000/25), // in milliseconds
+    refreshDelay: Math.round(1000/60), // in milliseconds
   },
 };
 
@@ -79,6 +79,14 @@ Pong = function (canvasElt) {
    */
   this.canvasCtx = this.canvas.getContext('2d');
   /**
+   * True if the scene must be redrawn.
+   */
+  this.invalidated = true;
+  /**
+   * True if the game is in motion (we need to refresh the scene periodically)
+   */
+  this.isInMotion = false;
+  /**
    * Players
    */
   this.players = [];
@@ -110,8 +118,24 @@ Pong = function (canvasElt) {
   this.waitUser();
 };
 Pong._config = _config;
+// Xbrowser my love
+Pong.requestAnimationFrame = window.requestAnimationFrame
+  || window.mozRequestAnimationFrame
+  || window.webkitRequestAnimationFrame
+  || window.msRequestAnimationFrame;
 
 Pong.prototype.draw = function() {
+  var that = this;
+  if(!this.invalidated) {
+    if(this.isInMotion) {
+      Pong.requestAnimationFrame.call(window, function() {
+        that.draw.call(that);
+      });
+    }
+    return;
+  }
+  this.invalidated = false;
+
   var i;
 
   // Clear scene
@@ -149,10 +173,23 @@ Pong.prototype.draw = function() {
     }
     draw = !draw;
   }
+
+  // If in motion, we refresh at next frame
+  if(this.isInMotion) {
+    Pong.requestAnimationFrame.call(window, function() {
+      that.draw.call(that);
+    });
+  }
 };
 
 Pong.prototype.waitUser = function() {
+  // Stop refresh
+  this.isInMotion = false;
+
+  // Draw the clean scene
   this.draw();
+
+  // Wait for user
   var that = this;
   this.wrapper.one('click', function(e) {
     that.startGame();
@@ -183,7 +220,15 @@ Pong.prototype.startGame = function() {
     }
   });
 
-  this.ball = new Pong.Ball(this);
+  // Create ball if this is a new game
+  if(this.ball == null)
+    this.ball = new Pong.Ball(this);
+
+  // Ready to update
+  this.isInMotion = true;
+  this.draw();
+
+  // move the ball
   this.ball.animate();
 };
 
@@ -192,7 +237,6 @@ Pong.prototype.startGame = function() {
  */
 Pong.prototype.stopGame = function() {
   this.ball.stop();
-  this.ball = null;
 
   this.wrapper.css('cursor', 'auto');
 
@@ -206,17 +250,27 @@ Pong.prototype.stopGame = function() {
 };
 
 /**
+ * Ends the game (reinitialize the game).
+ */
+Pong.prototype.endGame = function() {
+  delete this.ball;
+  this.ball = null;
+}
+
+/**
  * Ball is out, player 0 lost the ball
  */
 Pong.prototype.ballIsOutLeft = function() {
   this.stopGame();
+  this.endGame();
 };
 
 /**
  * Ball is out, player 1 lost the ball
  */
-Pong.prototype.ballIsOutLeft = function() {
+Pong.prototype.ballIsOutRight = function() {
   this.stopGame();
+  this.endGame();
 };
 
 var _bootstrap = function() {

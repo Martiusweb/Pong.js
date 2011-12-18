@@ -139,5 +139,5 @@ Pong.Ball.prototype.move = function() {
   }
 
   // Redraw
-  this.pong.draw();
+  this.pong.invalidated = true;
 };

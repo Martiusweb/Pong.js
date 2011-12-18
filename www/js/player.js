@@ -53,7 +53,7 @@ Pong.Player.prototype.moveTo = function(position) {
 
   this.position = position;
 
-  this.pong.draw();
+  this.pong.invalidated = true;
 };
 
 /**
