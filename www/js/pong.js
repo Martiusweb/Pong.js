@@ -24,7 +24,11 @@ var Pong, _config = {
     // opposite side of the canvas.
     playerPosition: [20, -20],
     playerStyle: ['white', 'white'],
-  }
+  },
+  ball: {
+    radius: 4,
+    style: 'white',
+  },
 };
 
 /**
@@ -77,6 +81,10 @@ Pong = function (canvasElt) {
    * Players
    */
   this.players = [];
+  /**
+   * Ball
+   */
+  this.ball = null;
 
   // Scene size
   this.canvas.width = Math.max(_config.scene.minWidth, this.wrapper.width());
@@ -94,9 +102,6 @@ Pong = function (canvasElt) {
   // cache horizontal middle of the scene position
   this.middleX = (this.canvas.width-_config.scene.separatorWidth)/2;
 
-  // draw scene
-  this.draw();
-
   this.waitUser();
 };
 Pong._config = _config;
@@ -113,6 +118,9 @@ Pong.prototype.draw = function() {
   }
 
   // Draw ball
+  if(this.ball) {
+    this.ball.draw();
+  }
 
   // Draw misc
 
@@ -139,6 +147,7 @@ Pong.prototype.draw = function() {
 };
 
 Pong.prototype.waitUser = function() {
+  this.draw();
   var that = this;
   this.wrapper.one('click', function(e) {
     that.startGame();
@@ -168,12 +177,16 @@ Pong.prototype.startGame = function() {
       that.stopGame();
     }
   });
+
+  this.ball = new Pong.Ball(this);
 };
 
 /**
  * Stop pauses the game action, it's not the end of the game.
  */
 Pong.prototype.stopGame = function() {
+  this.ball = null;
+
   this.wrapper.css('cursor', 'auto');
 
   // Stop trying to move handle, wait for pause
@@ -188,7 +201,7 @@ var _bootstrap = function() {
   var pongInstance = new Pong($('#ponginstance'));
 };
 
-_require([/*'Player',*/],
+_require([/*'Player', 'Ball',*/],
   function() {
     $(document).ready(_bootstrap);
   }
