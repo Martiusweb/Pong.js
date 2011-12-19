@@ -42,7 +42,7 @@ var Pong, _config = {
  *  - does not handle loading errors
  */
 var _require = function(libraries, callback) {
-  if(!libraries || libraries.length == 0) {
+  if(!libraries || libraries.length === 0) {
     callback();
     return;
   }
@@ -52,17 +52,18 @@ var _require = function(libraries, callback) {
 
   var nbLibrariesFetching = 0;
   var library, i;
+  var fetchLib = function() {
+      --nbLibrariesFetching;
+      if(nbLibrariesFetching === 0) {
+        callback();
+      }
+    };
   for(i = 0; i < libraries.length; ++i) {
     library = libraries[i];
     // Lowercase first letter
     library = library.charAt(0).toLowerCase() + library.slice(1);
     ++nbLibrariesFetching;
-    $.getScript('/js/' + library + '.js', function() {
-      --nbLibrariesFetching;
-      if(nbLibrariesFetching == 0) {
-        callback();
-      }
-    });
+    $.getScript('/js/' + library + '.js', fetchLib);
   }
 };
 
@@ -117,19 +118,19 @@ Pong = function (canvasElt) {
   /**
    * Playable player
    */
-  this.player;
+  this.player = null;
   /**
    * Playable player index in the players array
    */
-  this.playerIdx;
+  this.playerIdx = null;
   /**
    * Opponent
    */
-  this.opponent;
+  this.opponent = null;
   /**
    * Networking helper
    */
-  this.network;
+  this.network = null;
   /**
    * Networking state Element
    */
@@ -161,10 +162,10 @@ Pong = function (canvasElt) {
 };
 Pong._config = _config;
 // Xbrowser my love
-Pong.requestAnimationFrame = window.requestAnimationFrame
-  || window.mozRequestAnimationFrame
-  || window.webkitRequestAnimationFrame
-  || window.msRequestAnimationFrame;
+Pong.requestAnimationFrame = window.requestAnimationFrame ||
+  window.mozRequestAnimationFrame ||
+  window.webkitRequestAnimationFrame ||
+  window.msRequestAnimationFrame;
 
 /**
  * Draws the scene: handles, ball and separator.
@@ -280,7 +281,7 @@ Pong.prototype.startGame = function() {
   });
 
   // Create ball if this is a new game
-  if(this.ball == null)
+  if(this.ball === null)
     this.ball = new Pong.Ball(this);
 
   this.network.activateUpdates();
@@ -321,7 +322,7 @@ Pong.prototype.stopGame = function() {
 Pong.prototype.endGame = function() {
   delete this.ball;
   this.ball = null;
-}
+};
 
 /**
  * Ball is out
@@ -355,7 +356,7 @@ Pong.prototype.beRightPlayer = function() {
 Pong.prototype.findStatsDOMElements = function() {
   this.fpsElt = $('.fps.' + this.wrapper.attr('id'));
   if(!this.fpsElt.length)
-    this.fpsElt == null;
+    this.fpsElt = null;
   this.networkElt = $('.network.' + this.wrapper.attr('id'));
   if(!this.networkElt.length)
     this.networkElt = null;

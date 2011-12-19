@@ -53,7 +53,7 @@ Pong.Ball.prototype.draw = function() {
  * Automates the ball movement update
  */
 Pong.Ball.prototype.animate = function() {
-  if(this.timer != null)
+  if(this.timer !== null)
     return;
 
   var that = this;
@@ -66,7 +66,7 @@ Pong.Ball.prototype.animate = function() {
  * Stops the animation of the ball
  */
 Pong.Ball.prototype.stop = function() {
-  if(this.timer == null)
+  if(this.timer === null)
     return;
 
   window.clearInterval(this.timer);
@@ -122,8 +122,8 @@ Pong.Ball.prototype.move = function() {
         this.pong.ballIsOut();
       }
       else {
-        inVerticalBoundaries = (this.y >= player.position)
-          && (this.y <= (player.position+Pong._config.handle.height));
+        inVerticalBoundaries = (this.y >= player.position) &&
+          (this.y <= (player.position+Pong._config.handle.height));
 
         if(inVerticalBoundaries) {
           this.x = handleBoundaryPos+this.r;
@@ -143,8 +143,8 @@ Pong.Ball.prototype.move = function() {
         this.pong.ballIsOut();
       }
       else {
-        inVerticalBoundaries = (this.y >= player.position)
-          && (this.y <= (player.position+Pong._config.handle.height));
+        inVerticalBoundaries = (this.y >= player.position) &&
+          (this.y <= (player.position+Pong._config.handle.height));
 
         if(inVerticalBoundaries) {
           this.x = handleBoundaryPos-this.r;
