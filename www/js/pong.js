@@ -32,6 +32,7 @@ var Pong, _config = {
   },
   network: {
     refreshDelay: Math.round(1000/60), // in milliseconds
+    refreshTicks: 60, // in milliseconds
   },
 };
 

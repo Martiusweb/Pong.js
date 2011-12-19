@@ -32,6 +32,10 @@ Pong.Ball = function(pong) {
    * Timer ID (intervalID)
    */
   this.timer = null;
+  /**
+   * Nb of ticks since the last time when ball position had been sent
+   */
+  this.nbTicks = 0;
 };
 
 /**
@@ -78,8 +82,13 @@ Pong.Ball.prototype.onTick = function(e) {
 
 /**
  * Move the ball
+ *
+ * The ball position will be synchronized each _config.network.refreshTicks or
+ * when it bounces.
  */
 Pong.Ball.prototype.move = function() {
+  ++this.nbTicks;
+
   this.x += this.dx;
   this.y += this.dy;
 
@@ -88,20 +97,24 @@ Pong.Ball.prototype.move = function() {
   if((this.y-this.r) <= Pong._config.scene.margin) {
     this.y = Pong._config.scene.margin+this.r;
     this.dy = -this.dy;
+    this.sendBallData();
   }
   // Bottom
-  var canvasBottomMarginPos = this.pong.canvas.height - Pong._config.scene.margin;
-  if((this.y+this.r) >= canvasBottomMarginPos) {
-    this.y = canvasBottomMarginPos-this.r;
-    this.dy = -this.dy;
+  else {
+    var canvasBottomMarginPos = this.pong.canvas.height - Pong._config.scene.margin;
+    if((this.y+this.r) >= canvasBottomMarginPos) {
+      this.y = canvasBottomMarginPos-this.r;
+      this.dy = -this.dy;
+      this.sendBallData();
+    }
   }
 
   // Go out left/right borders
   // Detection is made only on the side of the player, balls lost or bounced by
   // the opponent are aknowledged by the network
   var player, handleBoundaryPos, inVerticalBoundaries;
-  if(this.pong.playerIdx === 0 && this.x < this.pong.middleX) { // left side
-    player = this.pong.players[0];
+  if(this.pong.playerIdx === Pong.Player.LEFT && this.x < this.pong.middleX) { // left side
+    player = this.pong.player;
     handleBoundaryPos = player.fixedPosition+Pong._config.handle.width;
 
     if((this.x-this.r) <= handleBoundaryPos) { // on the extreme left ?
@@ -115,12 +128,15 @@ Pong.Ball.prototype.move = function() {
         if(inVerticalBoundaries) {
           this.x = handleBoundaryPos+this.r;
           this.dx = -this.dx;
+          this.sendBallData();
         }
       }
     }
+
+    this.tryToSendBallData();
   }
-  else if(this.pong.playerIdx === 1) { // right side
-    player = this.pong.players[1];
+  else if(this.pong.playerIdx === Pong.Player.RIGHT && this.x > this.pong.middleX) { // right side
+    player = this.pong.player;
     handleBoundaryPos = player.fixedPosition;
     if((this.x+this.r) >= handleBoundaryPos) {
       if(this.x >= (this.pong.canvas.width + Pong._config.scene.margin)) {
@@ -133,11 +149,41 @@ Pong.Ball.prototype.move = function() {
         if(inVerticalBoundaries) {
           this.x = handleBoundaryPos-this.r;
           this.dx = -this.dx;
+          this.sendBallData();
         }
       }
     }
+    this.tryToSendBallData();
   }
 
   // Redraw
   this.pong.invalidated = true;
+};
+
+/**
+ * Request the network to update the ball state over network.
+ */
+Pong.Ball.prototype.sendBallData = function() {
+  this.nbTicks = 0;
+  this.pong.network.sendBallData = true;
+};
+
+/**
+ * Send updates if the limit of ticks had been reached.
+ */
+Pong.Ball.prototype.tryToSendBallData = function() {
+  if(this.nbTicks >= Pong._config.network.refreshTicks) {
+    this.sendBallData();
+  }
+};
+
+/**
+ * Update the position and the movement of the ball.
+ */
+Pong.Ball.prototype.updateBallData = function(x, y, dx, dy) {
+  this.x  = x;
+  this.y  = y;
+  this.dx = dx;
+  this.dy = dy;
+  this.nbTicks = 0;
 };

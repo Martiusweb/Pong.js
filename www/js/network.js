@@ -19,6 +19,18 @@ Pong.Network = function(pong) {
    * True if the player has an opponent online
    */
   this.hasOpponent = false;
+  /**
+   * Prevent to resend a received start message
+   */
+  this.preventEmitStart = false;
+  /**
+   * Prevent to resend a received stop message
+   */
+  this.preventEmitStop = false;
+  /**
+   * Adds the ball data to the next update
+   */
+  this.sendBallData = false;
 
   this.connect();
 };
@@ -28,7 +40,8 @@ Pong.Network.prototype.connect = function() {
     this.socket = io.connect('/');
 
   var that = this;
-  this.socket.on('connect', function() {
+  this.socket.on('connect', function(data) {
+    that.socket = this;
     if(that.pong.networkElt)
       that.pong.networkElt.text('Connected !');
     that.initNetworkHandlers();
@@ -43,17 +56,48 @@ Pong.Network.prototype.activateUpdates = function() {
   this.timer = window.setInterval(function() {
     that.sendUpdate.call(that);
   }, Pong._config.network.refreshDelay);
+
+  if(!this.preventEmitStart) {
+    this.socket.emit('game.start');
+  }
+  this.preventEmitStart = false;
+
+  if(this.pong.networkElt)
+    this.pong.networkElt.text("Game started");
 };
 
 /**
  * Deactivates updates
  */
 Pong.Network.prototype.deactivateUpdates = function() {
+  if(!this.preventEmitStop) {
+    this.socket.emit('game.stop');
+  }
+  this.preventEmitStop = false;
   clearInterval(this.timer);
+
+  if(this.pong.networkElt)
+    this.pong.networkElt.text("Game stopped");
 };
 
 Pong.Network.prototype.initNetworkHandlers = function() {
   var that = this;
+
+  /**
+   * Game starts
+   */
+  this.socket.on('game.start', function() {
+    that.preventEmitStart = true;
+    that.pong.startGame();
+  });
+
+  /**
+   * Game stops
+   */
+  this.socket.on('game.stop', function() {
+    that.preventEmitStop = true;
+    that.pong.stopGame();
+  });
 
   /**
    * Waiting for other player
@@ -88,10 +132,15 @@ Pong.Network.prototype.initNetworkHandlers = function() {
   });
 
   /**
-   * Other player moved
+   * Receive an update of the state of the game
    */
-  this.socket.on('player.moveTo', function(data) {
-    that.pong.opponent.moveTo(data.position);
+  this.socket.on('game.update', function(data) {
+    that.pong.opponent.moveTo(data.player.position);
+
+    if(data.ball) {
+      that.pong.ball.updateBallData(data.ball.x, data.ball.y, data.ball.dx,
+        data.ball.dy);
+    }
   });
 
   /**
@@ -106,18 +155,25 @@ Pong.Network.prototype.initNetworkHandlers = function() {
   });
 };
 
-/**
- * Shutdown network handlers on disconnection.
- */
-Pong.Network.prototype.shutdownNetworkHandlers = function() {
-  // TODO
-};
-
 Pong.Network.prototype.sendUpdate = function() {
   if(!this.socket)
     return;
 
-  this.socket.emit('player.moveTo', {
-    position: this.pong.player.position
-  });
+  var data = {
+    player: {
+      position: this.pong.player.position
+    },
+  };
+
+  if(this.sendBallData) {
+    data.ball = {
+      x:  this.pong.ball.x,
+      y:  this.pong.ball.y,
+      dx: this.pong.ball.dx,
+      dy: this.pong.ball.dy,
+    };
+    this.sendBallData = false;
+  }
+
+  this.socket.emit('game.update', data);
 };
