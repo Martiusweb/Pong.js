@@ -32,7 +32,7 @@ var Pong, _config = {
   },
   network: {
     refreshDelay: Math.round(1000/60), // in milliseconds
-    refreshTicks: 60, // in milliseconds
+    refreshTicks: 60, // in number of 
   },
 };
 
@@ -370,6 +370,24 @@ _require([/*'Player', 'Ball', 'Network', */],
     $(document).ready(_bootstrap);
   }
 );
+
+Pong.prototype.resizeScene = function(width, height) {
+  this.wrapper.width(width);
+  this.wrapper.height(height);
+
+  this.canvas.width = width;
+  this.canvas.height = height;
+
+  this.middleX = Math.round(width/2);
+
+  var i;
+  for(i = 0;i < this.players.length; ++i) {
+    this.players[i].updateFixedPosition();
+  }
+
+  this.invalidated = true;
+  this.draw();
+};
 
 // export Pong API
 this.Pong = Pong;

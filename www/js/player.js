@@ -8,29 +8,38 @@
 /**
  * A player (current user or opponent).
  */
-Pong.Player = function(pong, player) {
+Pong.Player = function(pong, side) {
   this.pong = pong;
+  /**
+   * Player side
+   */
+  this.side = side;
   /**
    * Style
    */
-  this.style = Pong._config.handle.playerStyle[player];
+  this.style = Pong._config.handle.playerStyle[side];
   /**
    * Position (on the axis where the handle does not move)
    */
-  this.fixedPosition = Pong._config.handle.playerPosition[player];
+  this.fixedPosition = 0;
   /**
    * Position (on the axis where the handle moves)
    */
   this.position = Pong._config.scene.margin;
 
+  this.updateFixedPosition();
+};
+Pong.Player.LEFT = 0;
+Pong.Player.RIGHT = 1;
+
+Pong.Player.prototype.updateFixedPosition = function() {
+  this.fixedPosition = Pong._config.handle.playerPosition[this.side];
   // Compute the right fixedPosition value (negative value means from the
   // opposite side)
   if(this.fixedPosition < 0) {
     this.fixedPosition += this.pong.canvas.width - Pong._config.handle.width;
   }
 };
-Pong.Player.LEFT = 0;
-Pong.Player.RIGHT = 1;
 
 /**
  * Draws player handle

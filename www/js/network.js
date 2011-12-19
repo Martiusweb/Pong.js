@@ -30,7 +30,7 @@ Pong.Network = function(pong) {
   /**
    * Adds the ball data to the next update
    */
-  this.sendBallData = false;
+  this.sendBallData = true;
 
   this.connect();
 };
@@ -81,6 +81,12 @@ Pong.Network.prototype.deactivateUpdates = function() {
 };
 
 Pong.Network.prototype.initNetworkHandlers = function() {
+  // First, I send my config
+  this.socket.emit('client.config', {
+    width: this.pong.canvas.width,
+    height: this.pong.canvas.height,
+  });
+
   var that = this;
 
   /**
@@ -120,6 +126,8 @@ Pong.Network.prototype.initNetworkHandlers = function() {
       that.pong.beLeftPlayer();
     else
       that.pong.beRightPlayer();
+
+    that.pong.resizeScene(data.width, data.height);
   });
 
   /**
