@@ -18,8 +18,8 @@ Pong.Ball = function(pong) {
   /**
    * Movement
    */
-  this.dx = -2;
-  this.dy = 1;
+  this.dx = 5;
+  this.dy = 3;
   /**
    * Radius of the ball
    */

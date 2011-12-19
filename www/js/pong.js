@@ -28,11 +28,11 @@ var Pong, _config = {
   ball: {
     radius: 4,
     style: 'white',
-    refreshDelay: Math.round(1000/60), // in milliseconds
+    refreshDelay: 20, // in milliseconds
   },
   network: {
     refreshDelay: Math.round(1000/60), // in milliseconds
-    refreshTicks: 60, // in number of 
+    refreshTicks: 5, // in number of Ticks 0 = always
   },
 };
 
