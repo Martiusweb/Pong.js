@@ -1,4 +1,10 @@
-.pong-game {
+body {
   background: black;
-  border: 1px #CC0000 solid;
+  color: white;
+  font-family: Helvetica, Arial, sans-serif;
+}
+a { color: white; }
+.pong-game {
+  margin: 0 auto;
+  border: 1px #FFFFFF solid;
 }
