@@ -6,35 +6,7 @@
  */
 
 (function($) {
-var Pong, _config = {
-  scene: {
-    minWidth: 500,
-    minHeight: 300,
-    margin: 10,
-    separatorWidth: 2,
-    separatorStyle: '#999',
-    separatorDashLength: 12,
-    separatorGapLength: 6,
-  },
-  handle: {
-    width: 12,
-    height: 30,
-    // Position of the player handle, indexed by player
-    // If the value is negative, the position is computed according to the
-    // opposite side of the canvas.
-    playerPosition: [20, -20],
-    playerStyle: ['white', 'white'],
-  },
-  ball: {
-    radius: 4,
-    style: 'white',
-    refreshDelay: 20, // in milliseconds
-  },
-  network: {
-    refreshDelay: Math.round(1000/60), // in milliseconds
-    refreshTicks: 5, // in number of Ticks 0 = always
-  },
-};
+var Pong;
 
 /**
  * Helper that loads libraries, can be minified easily.
@@ -135,10 +107,14 @@ Pong = function (canvasElt) {
    * Networking state Element
    */
   this.networkElt = null;
+  /**
+   * Ends the game after it stops
+   */
+  this.endAfterStop = false;
 
   // Scene size
-  this.canvas.width = Math.max(_config.scene.minWidth, this.wrapper.width());
-  this.canvas.height = Math.max(_config.scene.minHeight, this.wrapper.height());
+  this.canvas.width = Math.max(Pong._config.scene.minWidth, this.wrapper.width());
+  this.canvas.height = Math.max(Pong._config.scene.minHeight, this.wrapper.height());
   // If the wrapper does not have a fixed height, a few remaining pixels may be visible
   this.wrapper.height(this.canvas.height);
 
@@ -153,14 +129,13 @@ Pong = function (canvasElt) {
   this.players[Pong.Player.RIGHT] = new Pong.Player(this, Pong.Player.RIGHT);
 
   // cache horizontal middle of the scene position
-  this.middleX = (this.canvas.width-_config.scene.separatorWidth)/2;
+  this.middleX = (this.canvas.width-Pong._config.scene.separatorWidth)/2;
 
   // Prepare connexion
   this.network = new Pong.Network(this);
 
   this.waitUser();
 };
-Pong._config = _config;
 // Xbrowser my love
 Pong.requestAnimationFrame = window.requestAnimationFrame ||
   window.mozRequestAnimationFrame ||
@@ -207,8 +182,8 @@ Pong.prototype.draw = function() {
   // Draw misc
 
   // Draw middle line
-  this.canvasCtx.strokeStyle = _config.scene.separatorStyle;
-  this.canvasCtx.lineWidth = _config.scene.separatorWidth;
+  this.canvasCtx.strokeStyle = Pong._config.scene.separatorStyle;
+  this.canvasCtx.lineWidth = Pong._config.scene.separatorWidth;
   var draw = true, length = 0;
 
   this.canvasCtx.beginPath();
@@ -216,12 +191,12 @@ Pong.prototype.draw = function() {
   while(length < this.canvas.height) {
     if(draw) {
       // Do not go too far !
-      length = Math.min(length+_config.scene.separatorDashLength, this.canvas.height);
+      length = Math.min(length+Pong._config.scene.separatorDashLength, this.canvas.height);
       this.canvasCtx.lineTo(this.middleX, length);
       this.canvasCtx.stroke();
     }
     else {
-      length += _config.scene.separatorGapLength;
+      length += Pong._config.scene.separatorGapLength;
       this.canvasCtx.moveTo(this.middleX, length);
     }
     draw = !draw;
@@ -246,7 +221,7 @@ Pong.prototype.waitUser = function() {
   // Wait for user
   var that = this;
   this.wrapper.one('click', function(e) {
-    that.startGame();
+    that.network.requestStartGame();
   });
 };
 
@@ -269,7 +244,8 @@ Pong.prototype.startGame = function() {
     that.player.moveTo(e.pageY - wrapperOffset.top);
   });
 
-  // Listen to pause events
+  // Cancel possible "play request" event and listen to pause events
+  this.wrapper.unbind('click');
   this.wrapper.one('click', function() {
     that.stopGame();
   });
@@ -312,6 +288,11 @@ Pong.prototype.stopGame = function() {
   this.wrapper.unbind('keypress');
   this.wrapper.unbind('click');
 
+  if(this.endAfterStop) {
+    this.endGame();
+    this.endAfterStop = false;
+  }
+
   // Wait for the user to start the game
   this.waitUser();
 };
@@ -328,8 +309,7 @@ Pong.prototype.endGame = function() {
  * Ball is out
  */
 Pong.prototype.ballIsOut = function() {
-  this.stopGame();
-  this.endGame();
+  this.endAfterStop = true;
 };
 
 /**
@@ -366,7 +346,7 @@ var _bootstrap = function() {
   var pongInstance = new Pong($('#ponginstance'));
 };
 
-_require([/*'Player', 'Ball', 'Network', */],
+_require(['_config', /*'Player', 'Ball', 'Network', */],
   function() {
     $(document).ready(_bootstrap);
   }

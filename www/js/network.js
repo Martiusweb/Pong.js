@@ -20,17 +20,9 @@ Pong.Network = function(pong) {
    */
   this.hasOpponent = false;
   /**
-   * Prevent to resend a received start message
-   */
-  this.preventEmitStart = false;
-  /**
    * Prevent to resend a received stop message
    */
   this.preventEmitStop = false;
-  /**
-   * Adds the ball data to the next update
-   */
-  this.sendBallData = true;
 
   this.connect();
 };
@@ -56,11 +48,6 @@ Pong.Network.prototype.activateUpdates = function() {
   this.timer = window.setInterval(function() {
     that.sendUpdate.call(that);
   }, Pong._config.network.refreshDelay);
-
-  if(!this.preventEmitStart) {
-    this.socket.emit('game.start');
-  }
-  this.preventEmitStart = false;
 
   if(this.pong.networkElt)
     this.pong.networkElt.text("Game started");
@@ -93,7 +80,6 @@ Pong.Network.prototype.initNetworkHandlers = function() {
    * Game starts
    */
   this.socket.on('game.start', function() {
-    that.preventEmitStart = true;
     that.pong.startGame();
   });
 
@@ -135,17 +121,39 @@ Pong.Network.prototype.initNetworkHandlers = function() {
    */
   this.socket.on('player.opponnentLeft', function(data) {
     that.hasOpponent = false;
+    that.preventEmitStop = true;
     that.pong.stopGame();
     that.pong.endGame();
+  });
+
+  /**
+   * Player loses!
+   */
+  this.socket.on('game.losePoint', function() {
+    if(that.pong.networkElt)
+      that.pong.networkElt.text('You lose the point!');
+  });
+
+  /**
+   * Player wins!
+   */
+  this.socket.on('game.winPoint', function() {
+    console.log("win");
+    if(that.pong.networkElt)
+      that.pong.networkElt.text('You win the point!');
   });
 
   /**
    * Receive an update of the state of the game
    */
   this.socket.on('game.update', function(data) {
-    that.pong.opponent.moveTo(data.player.position);
+    if(data.opponentPosition) {
+      that.pong.opponent.moveTo(data.opponentPosition);
+    }
 
-    if(data.ball) {
+    // Test the existance of the ball in order to prevent a race condition with
+    // the server
+    if(data.ball && that.pong.ball) {
       that.pong.ball.updateBallData(data.ball.x, data.ball.y, data.ball.dx,
         data.ball.dy);
     }
@@ -157,9 +165,10 @@ Pong.Network.prototype.initNetworkHandlers = function() {
   this.socket.on('disconnect', function() {
     if(that.pong.networkElt)
       that.pong.networkElt.text('Disconnected');
-    that.shutdownNetworkHandlers();
     delete that.socket;
     that.socket = null;
+
+    that.pong.stopGame();
   });
 };
 
@@ -173,15 +182,13 @@ Pong.Network.prototype.sendUpdate = function() {
     },
   };
 
-  if(this.sendBallData) {
-    data.ball = {
-      x:  this.pong.ball.x,
-      y:  this.pong.ball.y,
-      dx: this.pong.ball.dx,
-      dy: this.pong.ball.dy,
-    };
-    this.sendBallData = false;
-  }
-
   this.socket.emit('game.update', data);
+};
+
+/**
+ * Notifies the server that the player is willing to start the game.
+ */
+Pong.Network.prototype.requestStartGame = function() {
+  if(this.hasOpponent)
+    this.socket.emit('game.start');
 };

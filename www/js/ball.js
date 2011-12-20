@@ -13,13 +13,13 @@ Pong.Ball = function(pong) {
   /**
    * Position of the center of the ball
    */
-  this.x = 50;
-  this.y = 50;
+  this.x = Pong._config.ball.startX;
+  this.y = Pong._config.ball.startY;
   /**
    * Movement
    */
-  this.dx = 5;
-  this.dy = 3;
+  this.dx = Pong._config.ball.startDx;
+  this.dy = Pong._config.ball.startDy;
   /**
    * Radius of the ball
    */
@@ -32,10 +32,6 @@ Pong.Ball = function(pong) {
    * Timer ID (intervalID)
    */
   this.timer = null;
-  /**
-   * Nb of ticks since the last time when ball position had been sent
-   */
-  this.nbTicks = 0;
 };
 
 /**
@@ -87,8 +83,6 @@ Pong.Ball.prototype.onTick = function(e) {
  * when it bounces.
  */
 Pong.Ball.prototype.move = function() {
-  ++this.nbTicks;
-
   this.x += this.dx;
   this.y += this.dy;
 
@@ -97,7 +91,6 @@ Pong.Ball.prototype.move = function() {
   if((this.y-this.r) <= Pong._config.scene.margin) {
     this.y = Pong._config.scene.margin+this.r;
     this.dy = -this.dy;
-    this.sendBallData();
   }
   // Bottom
   else {
@@ -105,7 +98,6 @@ Pong.Ball.prototype.move = function() {
     if((this.y+this.r) >= canvasBottomMarginPos) {
       this.y = canvasBottomMarginPos-this.r;
       this.dy = -this.dy;
-      this.sendBallData();
     }
   }
 
@@ -128,12 +120,9 @@ Pong.Ball.prototype.move = function() {
         if(inVerticalBoundaries) {
           this.x = handleBoundaryPos+this.r;
           this.dx = -this.dx;
-          this.sendBallData();
         }
       }
     }
-
-    this.tryToSendBallData();
   }
   else if(this.pong.playerIdx === Pong.Player.RIGHT && this.x > this.pong.middleX) { // right side
     player = this.pong.player;
@@ -149,32 +138,13 @@ Pong.Ball.prototype.move = function() {
         if(inVerticalBoundaries) {
           this.x = handleBoundaryPos-this.r;
           this.dx = -this.dx;
-          this.sendBallData();
         }
       }
     }
-    this.tryToSendBallData();
   }
 
   // Redraw
   this.pong.invalidated = true;
-};
-
-/**
- * Request the network to update the ball state over network.
- */
-Pong.Ball.prototype.sendBallData = function() {
-  this.nbTicks = 0;
-  this.pong.network.sendBallData = true;
-};
-
-/**
- * Send updates if the limit of ticks had been reached.
- */
-Pong.Ball.prototype.tryToSendBallData = function() {
-  if(this.nbTicks >= Pong._config.network.refreshTicks) {
-    this.sendBallData();
-  }
 };
 
 /**
@@ -185,5 +155,4 @@ Pong.Ball.prototype.updateBallData = function(x, y, dx, dy) {
   this.y  = y;
   this.dx = dx;
   this.dy = dy;
-  this.nbTicks = 0;
 };
