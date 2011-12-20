@@ -28,10 +28,6 @@ Pong.Ball = function(pong) {
    * Style of the ball
    */
   this.style = Pong._config.ball.style;
-  /**
-   * Timer ID (intervalID)
-   */
-  this.timer = null;
 };
 
 /**
@@ -46,108 +42,6 @@ Pong.Ball.prototype.draw = function() {
 };
 
 /**
- * Automates the ball movement update
- */
-Pong.Ball.prototype.animate = function() {
-  if(this.timer !== null)
-    return;
-
-  var that = this;
-  this.timer = window.setInterval(function(e) {
-    that.onTick.call(that, e);
-  }, Pong._config.ball.refreshDelay);
-};
-
-/**
- * Stops the animation of the ball
- */
-Pong.Ball.prototype.stop = function() {
-  if(this.timer === null)
-    return;
-
-  window.clearInterval(this.timer);
-  this.timer = null;
-};
-
-/**
- * Callback responding to timer ticks.
- */
-Pong.Ball.prototype.onTick = function(e) {
-  this.move();
-};
-
-/**
- * Move the ball
- *
- * The ball position will be synchronized each _config.network.refreshTicks or
- * when it bounces.
- */
-Pong.Ball.prototype.move = function() {
-  this.x += this.dx;
-  this.y += this.dy;
-
-  // Collision with borders : Bounce!
-  // Top
-  if((this.y-this.r) <= Pong._config.scene.margin) {
-    this.y = Pong._config.scene.margin+this.r;
-    this.dy = -this.dy;
-  }
-  // Bottom
-  else {
-    var canvasBottomMarginPos = this.pong.canvas.height - Pong._config.scene.margin;
-    if((this.y+this.r) >= canvasBottomMarginPos) {
-      this.y = canvasBottomMarginPos-this.r;
-      this.dy = -this.dy;
-    }
-  }
-
-  // Go out left/right borders
-  // Detection is made only on the side of the player, balls lost or bounced by
-  // the opponent are aknowledged by the network
-  var player, handleBoundaryPos, inVerticalBoundaries;
-  if(this.pong.playerIdx === Pong.Player.LEFT && this.x < this.pong.middleX) { // left side
-    player = this.pong.player;
-    handleBoundaryPos = player.fixedPosition+Pong._config.handle.width;
-
-    if((this.x-this.r) <= handleBoundaryPos) { // on the extreme left ?
-      if(this.x <= Pong._config.scene.margin) { // out of scene
-        this.pong.ballIsOut();
-      }
-      else {
-        inVerticalBoundaries = (this.y >= player.position) &&
-          (this.y <= (player.position+Pong._config.handle.height));
-
-        if(inVerticalBoundaries) {
-          this.x = handleBoundaryPos+this.r;
-          this.dx = -this.dx;
-        }
-      }
-    }
-  }
-  else if(this.pong.playerIdx === Pong.Player.RIGHT && this.x > this.pong.middleX) { // right side
-    player = this.pong.player;
-    handleBoundaryPos = player.fixedPosition;
-    if((this.x+this.r) >= handleBoundaryPos) {
-      if(this.x >= (this.pong.canvas.width + Pong._config.scene.margin)) {
-        this.pong.ballIsOut();
-      }
-      else {
-        inVerticalBoundaries = (this.y >= player.position) &&
-          (this.y <= (player.position+Pong._config.handle.height));
-
-        if(inVerticalBoundaries) {
-          this.x = handleBoundaryPos-this.r;
-          this.dx = -this.dx;
-        }
-      }
-    }
-  }
-
-  // Redraw
-  this.pong.invalidated = true;
-};
-
-/**
  * Update the position and the movement of the ball.
  */
 Pong.Ball.prototype.updateBallData = function(x, y, dx, dy) {
@@ -155,4 +49,5 @@ Pong.Ball.prototype.updateBallData = function(x, y, dx, dy) {
   this.y  = y;
   this.dx = dx;
   this.dy = dy;
+  this.pong.invalidated = true;
 };

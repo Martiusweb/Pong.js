@@ -265,9 +265,6 @@ Pong.prototype.startGame = function() {
   // Ready to update
   this.isInMotion = true;
   this.draw();
-
-  // move the ball
-  this.ball.animate();
 };
 
 /**
@@ -278,8 +275,6 @@ Pong.prototype.stopGame = function() {
     return;
 
   this.network.deactivateUpdates();
-
-  this.ball.stop();
 
   this.wrapper.css('cursor', 'auto');
 
