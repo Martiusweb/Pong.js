@@ -138,7 +138,6 @@ Pong.Network.prototype.initNetworkHandlers = function() {
    * Player wins!
    */
   this.socket.on('game.winPoint', function() {
-    console.log("win");
     if(that.pong.networkElt)
       that.pong.networkElt.text('You win the point!');
   });
