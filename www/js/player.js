@@ -5,6 +5,9 @@
  * Definition of a player
  */
 
+(function() {
+Pong = window.Pong || {};
+
 /**
  * A player (current user or opponent).
  */
@@ -73,3 +76,5 @@ Pong.Player.prototype.moveTo = function(position) {
 Pong.Player.prototype.moveOf = function(movement) {
   this.moveTo(this.position + movement);
 };
+
+})();

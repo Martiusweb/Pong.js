@@ -5,6 +5,9 @@
  * Methods handling network
  */
 
+(function() {
+Pong = window.Pong || {};
+
 Pong.Network = function(pong) {
   this.pong = pong;
   /**
@@ -191,3 +194,5 @@ Pong.Network.prototype.requestStartGame = function() {
   if(this.hasOpponent)
     this.socket.emit('game.start');
 };
+
+})();

@@ -5,6 +5,9 @@
  * Definition of the ball of the game
  */
 
+(function() {
+Pong = window.Pong || {};
+
 /**
  * The ball
  */
@@ -51,3 +54,5 @@ Pong.Ball.prototype.updateBallData = function(x, y, dx, dy) {
   this.dy = dy;
   this.pong.invalidated = true;
 };
+
+})();
